@@ -34,7 +34,6 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
   private readonly terminal: JEMATerminal;
   private readonly switchbot: Switchbot;
 
-  private targetState: any;
   private targetTemperature: number;
   private thresholdTemperature: number;
   private temperatureDisplayUnits: number;
@@ -55,12 +54,29 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       });
 
     // target state
-    this.targetState = hap.Characteristic.TargetHeatingCoolingState.OFF;
     this.heaterService.getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.targetState))
-      .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.targetState = value;
-        callback(undefined);
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
+        const state = hap.Characteristic.TargetHeatingCoolingState;
+        callback(undefined, this.terminal.value ? state.HEAT : state.OFF);
+      })
+      .on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        let err = undefined;
+        let on: boolean = false;
+        switch (value) {
+        case hap.Characteristic.TargetHeatingCoolingState.OFF:
+          on = false;
+          break;
+        case hap.Characteristic.TargetHeatingCoolingState.HEAT:
+          on = true;
+          break;
+        default:
+          err = new Error(`state ${value} not supported`);
+          break;
+        }
+        if (!err) {
+          await this.terminal.set(on);
+        }
+        callback(err);
       });
 
     // current temperature
