@@ -87,7 +87,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
 
     // display units
     this.temperatureDisplayUnits = hap.Characteristic.TemperatureDisplayUnits.CELSIUS;
-    this.heaterService.getCharacteristic(hap.Characteristic.TargetHeatingCoolingState)
+    this.heaterService.getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.temperatureDisplayUnits))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.temperatureDisplayUnits = value as number;
