@@ -1,4 +1,4 @@
-# homebridge-jema-terminal
+# homebridge-jema-heater
 
 Heater accessory plugin using JEMA terminal (JEM-A 1427) and Switchbot Meter API for [Homebridge](https://github.com/homebridge/homebridge)
 
@@ -9,7 +9,7 @@ Example configuration:
 ```json
 "accessories": [
    {
-      "accessory": "JEMATerminal",
+      "accessory": "JEMAHeater",
       "name": "Floor heater",
       "options": {
          "monitor": {
