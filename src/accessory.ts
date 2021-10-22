@@ -59,7 +59,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       targetTemperature: 20.0,
       temperatureDisplayUnits: hap.Characteristic.TemperatureDisplayUnits.CELSIUS
     });
-    this.userdata.thresholdTemperature =  config.options.thresholdTemperature;
+    this.userdata.thresholdTemperature = config.options.thresholdTemperature;
     log.info(this.userdata);
   
     // current state

@@ -20,7 +20,7 @@ export default class Switchbot extends EventEmitter {
 
   public start(): void {
     this.updateTemperature();
-    this.timer = setInterval(this.updateTemperature, this.options.duration);
+    this.timer = setInterval(() => this.updateTemperature(), this.options.duration);
   }
 
   public stop(): void {
