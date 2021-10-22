@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "axios": "^0.23.0",
-    "rpi-jema-terminal": "^0.0.1"
+    "rpi-jema-terminal": "^0.0.2"
   }
 }
