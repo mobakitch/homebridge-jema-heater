@@ -57,9 +57,9 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
     }
     _.defaults(this.userdata, {
       targetTemperature: 20.0,
-      thresholdTemperature: config.options.thresholdTemperature,
       temperatureDisplayUnits: hap.Characteristic.TemperatureDisplayUnits.CELSIUS
     });
+    this.userdata.thresholdTemperature =  config.options.thresholdTemperature;
     log.info(this.userdata);
   
     // current state
