@@ -89,6 +89,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.targetTemperature))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.targetTemperature = value as number;
+        this.updateHeaterState(this.switchbot.temperature);
         callback(undefined);
       });
 
@@ -98,6 +99,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.thresholdTemperature))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         this.thresholdTemperature = value as number;
+        this.updateHeaterState(this.switchbot.temperature);
         callback(undefined);
       });
 
@@ -126,6 +128,8 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(value ? state.HEAT : state.OFF);
     });
 
+    this.switchbot.on('change', (temperature) => this.updateHeaterState(temperature));
+
     log.info("JEM-A Terminal finished initializing!");
   }
 
@@ -146,6 +150,19 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       this.informationService,
       this.heaterService
     ];
+  }
+
+  private async updateHeaterState(currentTemperature: number) {
+    const state = hap.Characteristic.CurrentHeatingCoolingState;
+
+    if (currentTemperature < this.targetTemperature && this.terminal.value == false) {
+      await this.terminal.set(true);
+      this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(state.HEAT);
+    }
+    if (currentTemperature > this.thresholdTemperature && this.terminal.value == true){
+      await this.terminal.set(false);
+      this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(state.OFF);
+    }
   }
 
 }

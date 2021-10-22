@@ -1,12 +1,16 @@
+import { EventEmitter } from "events";
+
 const axios = require('axios').default;
 
-export default class Switchbot {
+export default class Switchbot extends EventEmitter {
 
   private readonly options: any;
   private timer: any;
   private _temperature: number;
 
   constructor(options: any) {
+    super();
+
     this.options = options;
     this._temperature = 20.0;
 
@@ -30,6 +34,9 @@ export default class Switchbot {
   private async updateTemperature() {
     const result = await axios.get(`/v1.0/devices/${this.options.deviceId}/status`);
     const data: any = result.data;
+    if (this._temperature = data.body.temperature) {
+      this.emit('change', this._temperature);
+    }
     this._temperature = data.body.temperature;
   }
 
