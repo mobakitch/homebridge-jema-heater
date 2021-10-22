@@ -53,7 +53,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
     const tmpfile = path.join(tmpdir, 'user.json');
     this.userdata = {};
     if (fs.existsSync(tmpfile)) {
-      this.userdata = fs.readFileSync(tmpfile);
+      this.userdata = JSON.parse(fs.readFileSync(tmpfile, 'utf8'));
     }
     _.defaults(this.userdata, {
       targetTemperature: 20.0,
