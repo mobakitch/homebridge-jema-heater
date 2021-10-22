@@ -1,6 +1,6 @@
 {
   "name": "homebridge-jema-heater",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Heater accessory plugin using JEMA terminal (JEM-A 1427) and Switchbot Meter API for homebridge",
   "main": "dist/accessory.js",
   "scripts": {
