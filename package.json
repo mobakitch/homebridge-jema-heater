@@ -30,13 +30,15 @@
     "url": "http://github.com/KAWABATANorio/homebridge-jema-heater/issues"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.176",
     "@types/node": "10.17.19",
-    "typescript": "^3.8.3",
+    "homebridge": "^1.0.4",
     "rimraf": "^3.0.2",
-    "homebridge": "^1.0.4"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "axios": "^0.23.0",
+    "lodash": "^4.17.21",
     "rpi-jema-terminal": "^0.0.2"
   }
 }

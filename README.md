@@ -12,6 +12,7 @@ Example configuration:
       "accessory": "JEMAHeater",
       "name": "Floor heater",
       "options": {
+         "thresholdTemperature": 24.0,
          "monitor": {
             "pin": 23,
             "inverted": true

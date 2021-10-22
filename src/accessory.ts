@@ -11,6 +11,10 @@ import {
   Service
 } from "homebridge";
 import JEMATerminal from "rpi-jema-terminal";
+import path from "path";
+import fs from "fs";
+import os from "os";
+import _ from "lodash";
 import Switchbot from "./switchbot";
 
 let hap: HAP;
@@ -34,9 +38,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
   private readonly terminal: JEMATerminal;
   private readonly switchbot: Switchbot;
 
-  private targetTemperature: number;
-  private thresholdTemperature: number;
-  private temperatureDisplayUnits: number;
+  private userdata: any;
 
   constructor(log: Logging, config: AccessoryConfig, api: API) {
     this.log = log;
@@ -46,6 +48,19 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
 
     this.heaterService = new hap.Service.Thermostat(this.name);
 
+    const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), config.name));
+    const tmpfile = path.join(tmpdir, 'user.json');
+    this.userdata = {};
+    if (fs.existsSync(tmpfile)) {
+      this.userdata = fs.readFileSync(tmpfile);
+    }
+    _.defaults(this.userdata, {
+      targetTemperature: 20.0,
+      thresholdTemperature: config.options.thresholdTemperature,
+      temperatureDisplayUnits: hap.Characteristic.TemperatureDisplayUnits.CELSIUS
+    });
+    log.info(this.userdata);
+  
     // current state
     this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState)
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
@@ -60,23 +75,21 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
         callback(undefined, this.terminal.value ? state.HEAT : state.OFF);
       })
       .on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        let err = undefined;
         let on: boolean = false;
         switch (value) {
         case hap.Characteristic.TargetHeatingCoolingState.OFF:
           on = false;
           break;
         case hap.Characteristic.TargetHeatingCoolingState.HEAT:
+        case hap.Characteristic.TargetHeatingCoolingState.AUTO:
           on = true;
           break;
         default:
-          err = new Error(`state ${value} not supported`);
+          log.warn(`state ${value} not supported`);
           break;
         }
-        if (!err) {
-          await this.terminal.set(on);
-        }
-        callback(err);
+        await this.terminal.set(on);
+        callback(undefined);
       });
 
     // current temperature
@@ -84,31 +97,28 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.switchbot.temperature));
 
     // target temperature
-    this.targetTemperature = 20.0;
     this.heaterService.getCharacteristic(hap.Characteristic.TargetTemperature)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.targetTemperature))
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.userdata.targetTemperature))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.targetTemperature = value as number;
+        this.userdata.targetTemperature = value as number;
         this.updateHeaterState(this.switchbot.temperature);
         callback(undefined);
       });
 
     // heating threshold temperature
-    this.thresholdTemperature = 24.0;
     this.heaterService.getCharacteristic(hap.Characteristic.HeatingThresholdTemperature)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.thresholdTemperature))
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.userdata.thresholdTemperature))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.thresholdTemperature = value as number;
+        this.userdata.thresholdTemperature = value as number;
         this.updateHeaterState(this.switchbot.temperature);
         callback(undefined);
       });
 
     // display units
-    this.temperatureDisplayUnits = hap.Characteristic.TemperatureDisplayUnits.CELSIUS;
     this.heaterService.getCharacteristic(hap.Characteristic.TemperatureDisplayUnits)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.temperatureDisplayUnits))
+      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => callback(undefined, this.userdata.temperatureDisplayUnits))
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        this.temperatureDisplayUnits = value as number;
+        this.userdata.temperatureDisplayUnits = value as number;
         callback(undefined);
       });
 
@@ -121,6 +131,7 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
       this.switchbot.start();
     }).on('shutdown', () => {
       this.switchbot.stop();
+      fs.writeFileSync(tmpfile, JSON.stringify(this.userdata));
     });
 
     this.terminal.on('change', (value: any) => {
@@ -155,11 +166,11 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
   private async updateHeaterState(currentTemperature: number) {
     const state = hap.Characteristic.CurrentHeatingCoolingState;
 
-    if (currentTemperature < this.targetTemperature && this.terminal.value == false) {
+    if (currentTemperature < this.userdata.targetTemperature && this.terminal.value == false) {
       await this.terminal.set(true);
       this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(state.HEAT);
     }
-    if (currentTemperature > this.thresholdTemperature && this.terminal.value == true){
+    if (currentTemperature > this.userdata.thresholdTemperature && this.terminal.value == true){
       await this.terminal.set(false);
       this.heaterService.getCharacteristic(hap.Characteristic.CurrentHeatingCoolingState).updateValue(state.OFF);
     }
