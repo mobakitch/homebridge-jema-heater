@@ -15,11 +15,8 @@ export default class Switchbot {
   }
 
   public start(): void {
-    this.timer = setInterval(async () => {
-      const result = await axios.get(`/v1.0/devices/${this.options.deviceId}/status`);
-      const data: any = result.data;
-      this._temperature = data.body.temperature;
-    }, this.options.duration);
+    this.updateTemperature();
+    this.timer = setInterval(this.updateTemperature, this.options.duration);
   }
 
   public stop(): void {
@@ -28,6 +25,12 @@ export default class Switchbot {
 
   get temperature(): number {
     return this._temperature;
+  }
+
+  private async updateTemperature() {
+    const result = await axios.get(`/v1.0/devices/${this.options.deviceId}/status`);
+    const data: any = result.data;
+    this._temperature = data.body.temperature;
   }
 
 }
