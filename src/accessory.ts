@@ -48,7 +48,8 @@ class JEMAHeaterAccessory implements AccessoryPlugin {
 
     this.heaterService = new hap.Service.Thermostat(this.name);
 
-    const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), config.name));
+    const tmpdir = path.join(os.tmpdir(), config.name);
+    fs.mkdirSync(tmpdir, {recursive: true});
     const tmpfile = path.join(tmpdir, 'user.json');
     this.userdata = {};
     if (fs.existsSync(tmpfile)) {
