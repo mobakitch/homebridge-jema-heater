@@ -1,6 +1,6 @@
 {
   "name": "homebridge-jema-heater",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Heater accessory plugin using JEMA terminal (JEM-A 1427) and Switchbot Meter API for homebridge",
   "main": "dist/accessory.js",
   "scripts": {
@@ -30,14 +30,14 @@
     "url": "http://github.com/KAWABATANorio/homebridge-jema-heater/issues"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.176",
-    "@types/node": "10.17.19",
-    "homebridge": "^1.0.4",
-    "rimraf": "^3.0.2",
-    "typescript": "^3.8.3"
+    "@types/lodash": "^4.14.201",
+    "@types/node": "^20.9.1",
+    "homebridge": "^1.7.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
-    "axios": "^0.23.0",
+    "axios": "^1.6.2",
     "lodash": "^4.17.21",
     "rpi-jema-terminal": "^0.0.2"
   }
